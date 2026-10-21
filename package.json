@@ -4,6 +4,9 @@
   "private": true,
   "dependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^9.5.0",
     "@pusher/push-notifications-server": "^1.2.7",
     "@pusher/push-notifications-web": "^1.1.0",
     "@testing-library/jest-dom": "^6.9.1",
@@ -19,7 +22,8 @@
     "react-dom": "^19.3.0",
     "react-router-dom": "^7.18.4",
     "vercel": "^48.4.1",
-    "web-vitals": "^6.2.2"
+    "web-vitals": "^6.2.2",
+    "zustand": "^5.0.15"
   },
   "scripts": {
     "dev": "vite",
