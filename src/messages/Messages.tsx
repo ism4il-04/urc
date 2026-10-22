@@ -5,7 +5,7 @@ import ChatIcon from "@mui/icons-material/Chat";
 import LogoutIcon from "@mui/icons-material/Logout";
 import {ChatAvatar} from "../components/ChatAvatar";
 import {useSessionStore} from "../store/sessionStore";
-import {useChatStore} from "../store/chatStore";
+import {chatKey, useChatStore} from "../store/chatStore";
 import {fetchMessages, fetchRooms, fetchUsers, UnauthorizedError} from "./messagesApi";
 import {startNotifications, stopNotifications} from "./notifications";
 import {UserList} from "./UserList";
@@ -21,6 +21,7 @@ export function Messages() {
     const setUsers = useChatStore((state) => state.setUsers);
     const setRooms = useChatStore((state) => state.setRooms);
     const setSelectedChat = useChatStore((state) => state.setSelectedChat);
+    const clearUnread = useChatStore((state) => state.clearUnread);
     const navigate = useNavigate();
     const {userId, roomId} = useParams();
 
@@ -56,16 +57,18 @@ export function Messages() {
         if (sw != null) {
             sw.onmessage = (event) => {
                 console.log("Got event from sw : " + JSON.stringify(event.data));
-                // Si le message concerne la conversation ouverte, on recharge les messages
-                const selected = useChatStore.getState().selectedChat;
                 const data = event.data || {};
-                const isOpen = selected && (data.roomId
-                    ? selected.type === "room" && selected.id === data.roomId
-                    : selected.type === "user" && selected.id === data.senderId);
-                if (selected && isOpen) {
+                const key = data.roomId ? chatKey("room", data.roomId) : chatKey("user", data.senderId);
+                const selected = useChatStore.getState().selectedChat;
+
+                if (selected && chatKey(selected.type, selected.id) === key) {
+                    // Conversation ouverte : on recharge les messages
                     fetchMessages(session.token, selected)
                         .then(useChatStore.getState().setMessages)
                         .catch(console.log);
+                } else {
+                    // Autre conversation : un message non lu de plus
+                    useChatStore.getState().incrementUnread(key);
                 }
             };
         }
@@ -77,8 +80,10 @@ export function Messages() {
         const room = rooms.find((r) => String(r.room_id) === roomId);
         if (user) {
             setSelectedChat({type: "user", id: user.user_id, name: user.username});
+            clearUnread(chatKey("user", user.user_id));
         } else if (room) {
             setSelectedChat({type: "room", id: room.room_id, name: room.name});
+            clearUnread(chatKey("room", room.room_id));
         } else {
             setSelectedChat(null);
         }

@@ -16,7 +16,8 @@ async function callApi<T>(url: string, token: string, options: RequestInit = {})
         throw new UnauthorizedError();
     }
     if (!response.ok) {
-        throw new Error("Erreur " + response.status);
+        const body = await response.json().catch(() => ({}));
+        throw new Error(body.message || "Erreur " + response.status);
     }
     return await response.json() as T;
 }
@@ -27,6 +28,13 @@ export function fetchUsers(token: string): Promise<User[]> {
 
 export function fetchRooms(token: string): Promise<Room[]> {
     return callApi<Room[]>("/api/rooms", token);
+}
+
+export function createRoom(token: string, name: string): Promise<Room> {
+    return callApi<Room>("/api/rooms", token, {
+        method: "POST",
+        body: JSON.stringify({name}),
+    });
 }
 
 export function fetchMessages(token: string, chat: Chat): Promise<Message[]> {
