@@ -1,5 +1,5 @@
 import {AUTHENT_HEADER, BEARER} from "../model/common";
-import type {Chat, Message, Room, User} from "../model/common";
+import type {Chat, Message, Profile, Room, User} from "../model/common";
 
 // Erreur levée quand le token de session n'est plus valide
 export class UnauthorizedError extends Error {}
@@ -24,6 +24,24 @@ async function callApi<T>(url: string, token: string, options: RequestInit = {})
 
 export function fetchUsers(token: string): Promise<User[]> {
     return callApi<User[]>("/api/users", token);
+}
+
+export function fetchProfile(token: string): Promise<Profile> {
+    return callApi<Profile>("/api/profile", token);
+}
+
+export interface ProfileUpdate {
+    email: string;
+    avatarUrl: string | null;
+    currentPassword?: string;
+    newPassword?: string;
+}
+
+export function updateProfile(token: string, update: ProfileUpdate): Promise<Profile> {
+    return callApi<Profile>("/api/profile", token, {
+        method: "PUT",
+        body: JSON.stringify(update),
+    });
 }
 
 export function fetchRooms(token: string): Promise<Room[]> {

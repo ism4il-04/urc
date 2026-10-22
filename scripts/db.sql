@@ -5,7 +5,8 @@ CREATE TABLE users (
    email VARCHAR ( 255 ) UNIQUE NOT NULL,
    created_on TIMESTAMP NOT NULL,
    last_login TIMESTAMP,
-   external_id VARCHAR ( 50 ) UNIQUE NOT NULL
+   external_id VARCHAR ( 50 ) UNIQUE NOT NULL,
+   avatar_url VARCHAR ( 500 )
 );
 
 CREATE TABLE rooms (
@@ -21,3 +22,6 @@ insert into users (username, password, email, created_on, external_id) values ('
 insert into rooms (name, created_on, created_by) values ('General', now(), 4);
 insert into rooms (name, created_on, created_by) values ('News', now(), 4);
 insert into rooms (name, created_on, created_by) values ('Random', now(), 4);
+
+-- Si la table users existe déjà : ajout de la photo de profil
+-- ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR ( 500 );

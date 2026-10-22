@@ -12,10 +12,10 @@ function colorFor(name: string) {
     return COLORS[Math.abs(hash) % COLORS.length];
 }
 
-// Avatar avec l'initiale du nom (ou # pour un salon)
-export function ChatAvatar({name, room = false, size = 40}: {name: string, room?: boolean, size?: number}) {
+// Avatar : photo de profil si elle existe, sinon l'initiale du nom (ou # pour un salon)
+export function ChatAvatar({name, src, room = false, size = 40}: {name: string, src?: string | null, room?: boolean, size?: number}) {
     return (
-        <Avatar variant={room ? "rounded" : "circular"}
+        <Avatar variant={room ? "rounded" : "circular"} src={src || undefined} alt={name}
                 sx={{bgcolor: colorFor(name), width: size, height: size, fontSize: size * 0.45, fontWeight: 600}}>
             {room ? "#" : name.charAt(0).toUpperCase()}
         </Avatar>

@@ -1,6 +1,6 @@
 import React, {useEffect} from "react";
 import {useNavigate, useParams} from "react-router-dom";
-import {AppBar, Box, Button, Paper, Toolbar, Typography} from "@mui/material";
+import {AppBar, Box, Button, Paper, Toolbar, Tooltip, Typography} from "@mui/material";
 import ChatIcon from "@mui/icons-material/Chat";
 import LogoutIcon from "@mui/icons-material/Logout";
 import {ChatAvatar} from "../components/ChatAvatar";
@@ -95,8 +95,13 @@ export function Messages() {
                 <Toolbar>
                     <ChatIcon sx={{mr: 1}}/>
                     <Typography variant="h6" sx={{fontWeight: 700, flexGrow: 1}}>UBO Relay Chat</Typography>
-                    <ChatAvatar name={session?.username || "?"} size={32}/>
-                    <Typography sx={{mx: 1.5, display: {xs: "none", sm: "block"}}}>{session?.username}</Typography>
+                    <Tooltip title="Mon profil">
+                        <Button color="inherit" onClick={() => navigate("/profile")} sx={{mr: 1}}>
+                            <ChatAvatar name={session?.username || "?"} size={32}
+                                        src={users.find((u) => u.user_id === session?.id)?.avatar_url}/>
+                            <Typography sx={{ml: 1.5, display: {xs: "none", sm: "block"}}}>{session?.username}</Typography>
+                        </Button>
+                    </Tooltip>
                     <Button color="inherit" startIcon={<LogoutIcon/>} onClick={handleLogout}>Déconnexion</Button>
                 </Toolbar>
             </AppBar>

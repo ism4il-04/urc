@@ -77,7 +77,7 @@ export function UserList() {
                     <ListItemButton key={user.user_id} sx={itemStyle}
                                     selected={selectedChat?.type === "user" && selectedChat.id === user.user_id}
                                     onClick={() => navigate("/messages/user/" + user.user_id)}>
-                        <ListItemAvatar><ChatAvatar name={user.username}/></ListItemAvatar>
+                        <ListItemAvatar><ChatAvatar name={user.username} src={user.avatar_url}/></ListItemAvatar>
                         <ListItemText primary={user.username}
                                       secondary={user.last_login ? "Vu le " + user.last_login : "Jamais connecté"}/>
                         <Badge badgeContent={unread[chatKey("user", user.user_id)]} color="error" sx={{mr: 1}}/>

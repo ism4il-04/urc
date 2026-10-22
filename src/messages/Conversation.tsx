@@ -15,6 +15,7 @@ export function Conversation() {
     const session = useSessionStore((state) => state.session);
     const selectedChat = useChatStore((state) => state.selectedChat);
     const messages = useChatStore((state) => state.messages);
+    const users = useChatStore((state) => state.users);
     const setMessages = useChatStore((state) => state.setMessages);
     const addMessage = useChatStore((state) => state.addMessage);
     const [text, setText] = useState("");
@@ -90,27 +91,36 @@ export function Conversation() {
     return (
         <Box sx={{flexGrow: 1, minHeight: 0, display: "flex", flexDirection: "column"}}>
             <Box sx={{display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.5, bgcolor: "white", borderBottom: 1, borderColor: "divider"}}>
-                <ChatAvatar name={selectedChat.name} room={isRoom}/>
+                <ChatAvatar name={selectedChat.name} room={isRoom}
+                            src={isRoom ? null : users.find((u) => u.user_id === selectedChat.id)?.avatar_url}/>
                 <Typography variant="h6" sx={{fontWeight: 600}}>{selectedChat.name}</Typography>
             </Box>
 
             <Box sx={{flexGrow: 1, overflowY: "auto", p: 2, bgcolor: "background.default"}}>
                 {messages.map((message, index) => {
                     const isMine = message.senderId === session?.id;
+                    // Messages consécutifs du même auteur = un groupe
+                    const isFirstOfGroup = index === 0 || messages[index - 1].senderId !== message.senderId;
+                    const isLastOfGroup = index === messages.length - 1 || messages[index + 1].senderId !== message.senderId;
+                    // Nom et photo : seulement dans les salons, sur le 1er message du groupe
+                    const showSender = isRoom && !isMine;
                     return (
-                        <Box key={index} sx={{display: "flex", alignItems: "flex-end", gap: 1, mb: 1.5,
+                        <Box key={index} sx={{display: "flex", alignItems: "flex-start", gap: 1, mb: isLastOfGroup ? 1.5 : 0.25,
                             justifyContent: isMine ? "flex-end" : "flex-start"}}>
-                            {!isMine && <ChatAvatar name={message.senderName} size={32}/>}
+                            {showSender && (isFirstOfGroup
+                                ? <ChatAvatar name={message.senderName} size={32}
+                                              src={users.find((u) => u.user_id === message.senderId)?.avatar_url}/>
+                                : <Box sx={{width: 32, flexShrink: 0}}/>)}
                             <Paper elevation={0} sx={{
                                 px: 1.5, py: 1, maxWidth: "65%",
                                 bgcolor: isMine ? "primary.main" : "white",
                                 color: isMine ? "white" : "text.primary",
                                 borderRadius: 3,
-                                borderBottomRightRadius: isMine ? 4 : undefined,
-                                borderBottomLeftRadius: isMine ? undefined : 4,
+                                borderBottomRightRadius: isMine && isLastOfGroup ? 4 : undefined,
+                                borderBottomLeftRadius: !isMine && isLastOfGroup ? 4 : undefined,
                                 boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
                             }}>
-                                {!isMine &&
+                                {showSender && isFirstOfGroup &&
                                     <Typography variant="caption" color="primary" sx={{fontWeight: 700}}>{message.senderName}</Typography>
                                 }
                                 {message.image &&

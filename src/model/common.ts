@@ -10,6 +10,13 @@ export interface User {
     password: string;
     last_login?: string;
     external_id?: string;
+    avatar_url?: string | null;
+}
+
+export interface Profile {
+    username: string;
+    email: string;
+    avatar_url: string | null;
 }
 
 export interface Session {
