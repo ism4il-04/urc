@@ -1,12 +1,9 @@
 import { sql } from "@vercel/postgres";
-import {checkSession, unauthorizedResponse} from "../lib/session";
+import {checkSession, unauthorizedResponse} from "../lib/session.js";
 
-export const config = {
-    runtime: 'edge',
-};
 
 // GET /api/rooms : liste des salons
-export default async function handler(request) {
+export async function GET(request) {
     try {
         const connected = await checkSession(request);
         if (!connected) {
@@ -26,4 +23,4 @@ export default async function handler(request) {
             headers: {'content-type': 'application/json'},
         });
     }
-};
+}

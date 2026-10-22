@@ -1,9 +1,6 @@
-import { db } from '@vercel/postgres';
-import {arrayBufferToBase64, stringToArrayBuffer} from "../lib/base64";
+import { sql } from '@vercel/postgres';
+import {arrayBufferToBase64, stringToArrayBuffer} from "../lib/base64.js";
 
-export const config = {
-    runtime: 'edge',
-};
 
 function errorResponse(status, code, message) {
     return new Response(JSON.stringify({code, message}), {
@@ -12,7 +9,7 @@ function errorResponse(status, code, message) {
     });
 }
 
-export default async function handler(request) {
+export async function POST(request) {
     try {
         const {username, email, password} = await request.json();
 
@@ -22,8 +19,7 @@ export default async function handler(request) {
         }
 
         // 2. Vérifier que le username et l'email ne sont pas déjà utilisés
-        const client = await db.connect();
-        const {rowCount} = await client.sql`select user_id from users where username = ${username} or email = ${email}`;
+        const {rowCount} = await sql`select user_id from users where username = ${username} or email = ${email}`;
         if (rowCount > 0) {
             return errorResponse(409, "CONFLICT", "Ce login ou cet email est déjà utilisé");
         }
@@ -36,7 +32,7 @@ export default async function handler(request) {
         const externalId = crypto.randomUUID().toString();
 
         // 5. Enregistrer en base
-        await client.sql`insert into users (username, password, email, created_on, external_id)
+        await sql`insert into users (username, password, email, created_on, external_id)
                          values (${username}, ${hashed64}, ${email}, now(), ${externalId})`;
 
         return new Response(JSON.stringify({username, externalId}), {

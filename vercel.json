@@ -1,4 +1,9 @@
 {
+  "functions": {
+    "api/*.js": {
+      "includeFiles": "node_modules/@vercel/postgres/dist/**"
+    }
+  },
   "rewrites": [
     { "source": "/login", "destination": "/index.html" },
     { "source": "/register", "destination": "/index.html" },

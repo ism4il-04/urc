@@ -1,12 +1,9 @@
 import { put } from "@vercel/blob";
-import {checkSession, unauthorizedResponse} from "../lib/session";
+import {checkSession, unauthorizedResponse} from "../lib/session.js";
 
-export const config = {
-    runtime: 'edge',
-};
 
 // POST /api/upload?filename=x.gif : enregistre l'image dans Vercel Blob et renvoie son URL
-export default async function handler(request) {
+export async function POST(request) {
     try {
         const connected = await checkSession(request);
         if (!connected) {
