@@ -1,5 +1,9 @@
 import React, {useEffect, useRef, useState} from "react";
-import {Box, Button, Paper, TextField, Typography} from "@mui/material";
+import {Box, CircularProgress, IconButton, Paper, TextField, Tooltip, Typography} from "@mui/material";
+import SendIcon from "@mui/icons-material/Send";
+import ImageIcon from "@mui/icons-material/Image";
+import ForumIcon from "@mui/icons-material/Forum";
+import {ChatAvatar} from "../components/ChatAvatar";
 import {useChatStore} from "../store/chatStore";
 import {useSessionStore} from "../store/sessionStore";
 import {fetchMessages, sendMessage, uploadImage} from "./messagesApi";
@@ -73,35 +77,53 @@ export function Conversation() {
 
     if (!selectedChat) {
         return (
-            <Box sx={{p: 3}}>
-                <Typography color="text.secondary">Sélectionne un salon ou un utilisateur pour discuter</Typography>
+            <Box sx={{flexGrow: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "text.secondary"}}>
+                <ForumIcon sx={{fontSize: 80, opacity: 0.3, mb: 2}}/>
+                <Typography variant="h6">Bienvenue sur UBO Relay Chat</Typography>
+                <Typography>Sélectionne un salon ou un utilisateur pour discuter</Typography>
             </Box>
         );
     }
 
+    const isRoom = selectedChat.type === "room";
+
     return (
         <Box sx={{flexGrow: 1, minHeight: 0, display: "flex", flexDirection: "column"}}>
-            <Typography variant="h6" sx={{p: 2, borderBottom: 1, borderColor: "divider"}}>
-                {selectedChat.type === "room" ? "# " + selectedChat.name : selectedChat.name}
-            </Typography>
+            <Box sx={{display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.5, bgcolor: "white", borderBottom: 1, borderColor: "divider"}}>
+                <ChatAvatar name={selectedChat.name} room={isRoom}/>
+                <Typography variant="h6" sx={{fontWeight: 600}}>{selectedChat.name}</Typography>
+            </Box>
 
-            <Box sx={{flexGrow: 1, overflowY: "auto", p: 2, bgcolor: "#f5f5f5"}}>
+            <Box sx={{flexGrow: 1, overflowY: "auto", p: 2, bgcolor: "background.default"}}>
                 {messages.map((message, index) => {
                     const isMine = message.senderId === session?.id;
                     return (
-                        <Box key={index} sx={{display: "flex", justifyContent: isMine ? "flex-end" : "flex-start", mb: 1}}>
-                            <Paper sx={{p: 1.5, maxWidth: "60%", bgcolor: isMine ? "primary.main" : "white", color: isMine ? "white" : "black"}}>
-                                <Typography variant="caption" sx={{opacity: 0.8}}>
-                                    {message.senderName} - {new Date(message.date).toLocaleString("fr-FR")}
-                                </Typography>
+                        <Box key={index} sx={{display: "flex", alignItems: "flex-end", gap: 1, mb: 1.5,
+                            justifyContent: isMine ? "flex-end" : "flex-start"}}>
+                            {!isMine && <ChatAvatar name={message.senderName} size={32}/>}
+                            <Paper elevation={0} sx={{
+                                px: 1.5, py: 1, maxWidth: "65%",
+                                bgcolor: isMine ? "primary.main" : "white",
+                                color: isMine ? "white" : "text.primary",
+                                borderRadius: 3,
+                                borderBottomRightRadius: isMine ? 4 : undefined,
+                                borderBottomLeftRadius: isMine ? undefined : 4,
+                                boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
+                            }}>
+                                {!isMine &&
+                                    <Typography variant="caption" color="primary" sx={{fontWeight: 700}}>{message.senderName}</Typography>
+                                }
                                 {message.image &&
                                     <Box component="img" src={message.image} alt="image"
-                                         sx={{display: "block", maxWidth: "100%", maxHeight: 300, borderRadius: 1, mt: 0.5}}
+                                         sx={{display: "block", maxWidth: "100%", maxHeight: 300, borderRadius: 2, mt: 0.5}}
                                          onLoad={() => bottomRef.current?.scrollIntoView()}/>
                                 }
                                 {message.content &&
-                                    <Typography sx={{whiteSpace: "pre-wrap"}}>{message.content}</Typography>
+                                    <Typography sx={{whiteSpace: "pre-wrap", wordBreak: "break-word"}}>{message.content}</Typography>
                                 }
+                                <Typography variant="caption" sx={{display: "block", textAlign: "right", opacity: 0.7, fontSize: 11}}>
+                                    {new Date(message.date).toLocaleString("fr-FR", {day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"})}
+                                </Typography>
                             </Paper>
                         </Box>
                     );
@@ -109,14 +131,24 @@ export function Conversation() {
                 <div ref={bottomRef}/>
             </Box>
 
-            <Box component="form" onSubmit={handleSend} sx={{display: "flex", p: 2, gap: 1, borderTop: 1, borderColor: "divider"}}>
-                <TextField value={text} onChange={(e) => setText(e.target.value)}
-                           placeholder="Écrire un message..." size="small" fullWidth autoComplete="off"/>
+            <Box component="form" onSubmit={handleSend}
+                 sx={{display: "flex", alignItems: "center", px: 2, py: 1.5, gap: 1, bgcolor: "white", borderTop: 1, borderColor: "divider"}}>
                 <input ref={fileRef} type="file" accept="image/*" hidden onChange={handleImage}/>
-                <Button variant="outlined" disabled={sending} onClick={() => fileRef.current?.click()}>
-                    {sending ? "..." : "Image"}
-                </Button>
-                <Button type="submit" variant="contained" disabled={sending}>Envoyer</Button>
+                <Tooltip title="Envoyer une image">
+                    <span>
+                        <IconButton color="primary" disabled={sending} onClick={() => fileRef.current?.click()}>
+                            {sending ? <CircularProgress size={24}/> : <ImageIcon/>}
+                        </IconButton>
+                    </span>
+                </Tooltip>
+                <TextField value={text} onChange={(e) => setText(e.target.value)}
+                           placeholder={"Message " + (isRoom ? "#" : "à ") + selectedChat.name + "..."}
+                           size="small" fullWidth autoComplete="off"
+                           sx={{"& .MuiOutlinedInput-root": {borderRadius: 6, bgcolor: "background.default"}}}/>
+                <IconButton type="submit" color="primary" disabled={sending || text.trim() === ""}
+                            sx={{bgcolor: "primary.main", color: "white", "&:hover": {bgcolor: "primary.dark"}}}>
+                    <SendIcon/>
+                </IconButton>
             </Box>
         </Box>
     );

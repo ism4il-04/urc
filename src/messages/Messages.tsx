@@ -1,6 +1,9 @@
 import React, {useEffect} from "react";
 import {useNavigate, useParams} from "react-router-dom";
 import {AppBar, Box, Button, Paper, Toolbar, Typography} from "@mui/material";
+import ChatIcon from "@mui/icons-material/Chat";
+import LogoutIcon from "@mui/icons-material/Logout";
+import {ChatAvatar} from "../components/ChatAvatar";
 import {useSessionStore} from "../store/sessionStore";
 import {useChatStore} from "../store/chatStore";
 import {fetchMessages, fetchRooms, fetchUsers, UnauthorizedError} from "./messagesApi";
@@ -83,15 +86,17 @@ export function Messages() {
 
     return (
         <Box sx={{height: "100vh", display: "flex", flexDirection: "column"}}>
-            <AppBar position="static">
+            <AppBar position="static" elevation={0}>
                 <Toolbar>
-                    <Typography variant="h6" sx={{flexGrow: 1}}>UBO Relay Chat</Typography>
-                    <Typography sx={{mr: 2}}>{session?.username}</Typography>
-                    <Button color="inherit" onClick={handleLogout}>Déconnexion</Button>
+                    <ChatIcon sx={{mr: 1}}/>
+                    <Typography variant="h6" sx={{fontWeight: 700, flexGrow: 1}}>UBO Relay Chat</Typography>
+                    <ChatAvatar name={session?.username || "?"} size={32}/>
+                    <Typography sx={{mx: 1.5, display: {xs: "none", sm: "block"}}}>{session?.username}</Typography>
+                    <Button color="inherit" startIcon={<LogoutIcon/>} onClick={handleLogout}>Déconnexion</Button>
                 </Toolbar>
             </AppBar>
             <Box sx={{flexGrow: 1, display: "flex", overflow: "hidden"}}>
-                <Paper square sx={{width: 280, overflowY: "auto"}}>
+                <Paper square elevation={0} sx={{width: 300, flexShrink: 0, overflowY: "auto", borderRight: 1, borderColor: "divider"}}>
                     <UserList/>
                 </Paper>
                 <Box sx={{flexGrow: 1, display: "flex", flexDirection: "column", minWidth: 0}}>
