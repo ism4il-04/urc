@@ -20,6 +20,28 @@ export interface Session {
 }
 
 
+export interface Room {
+    room_id: number;
+    name: string;
+}
+
+// Conversation sélectionnée : un utilisateur ou un salon
+export interface Chat {
+    type: "user" | "room";
+    id: number;
+    name: string;
+}
+
+export interface Message {
+    senderId: number;
+    senderName: string;
+    receiverId?: number;
+    roomId?: number;
+    content: string;
+    image?: string;
+    date: string;
+}
+
 export interface EmptyCallback {
     (): void;
 }

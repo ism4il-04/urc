@@ -20,6 +20,7 @@ function App() {
               <Route path="/register" element={<Register/>}/>
               <Route path="/messages" element={<PrivateRoute><Messages/></PrivateRoute>}/>
               <Route path="/messages/user/:userId" element={<PrivateRoute><Messages/></PrivateRoute>}/>
+              <Route path="/messages/room/:roomId" element={<PrivateRoute><Messages/></PrivateRoute>}/>
               <Route path="*" element={<Navigate to="/messages"/>}/>
           </Routes>
       </BrowserRouter>

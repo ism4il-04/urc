@@ -1,16 +1,26 @@
 import {create} from "zustand";
-import type {User} from "../model/common";
+import type {Chat, Message, Room, User} from "../model/common";
 
 interface ChatState {
     users: User[];
-    selectedUser: User | null;
+    rooms: Room[];
+    selectedChat: Chat | null;
+    messages: Message[];
     setUsers: (users: User[]) => void;
-    setSelectedUser: (user: User | null) => void;
+    setRooms: (rooms: Room[]) => void;
+    setSelectedChat: (chat: Chat | null) => void;
+    setMessages: (messages: Message[]) => void;
+    addMessage: (message: Message) => void;
 }
 
 export const useChatStore = create<ChatState>((set) => ({
     users: [],
-    selectedUser: null,
+    rooms: [],
+    selectedChat: null,
+    messages: [],
     setUsers: (users) => set({users}),
-    setSelectedUser: (user) => set({selectedUser: user}),
+    setRooms: (rooms) => set({rooms}),
+    setSelectedChat: (chat) => set({selectedChat: chat}),
+    setMessages: (messages) => set({messages}),
+    addMessage: (message) => set((state) => ({messages: [...state.messages, message]})),
 }));

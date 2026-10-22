@@ -1,15 +1,63 @@
 import {AUTHENT_HEADER, BEARER} from "../model/common";
-import type {User} from "../model/common";
+import type {Chat, Message, Room, User} from "../model/common";
 
 // Erreur levée quand le token de session n'est plus valide
 export class UnauthorizedError extends Error {}
 
-export async function fetchUsers(token: string): Promise<User[]> {
-    const response = await fetch("/api/users", {
-        headers: {[AUTHENT_HEADER]: BEARER + token},
+async function callApi<T>(url: string, token: string, options: RequestInit = {}): Promise<T> {
+    const response = await fetch(url, {
+        ...options,
+        headers: {
+            "Content-Type": "application/json",
+            [AUTHENT_HEADER]: BEARER + token,
+        },
     });
     if (response.status === 401) {
         throw new UnauthorizedError();
     }
-    return await response.json() as User[];
+    if (!response.ok) {
+        throw new Error("Erreur " + response.status);
+    }
+    return await response.json() as T;
+}
+
+export function fetchUsers(token: string): Promise<User[]> {
+    return callApi<User[]>("/api/users", token);
+}
+
+export function fetchRooms(token: string): Promise<Room[]> {
+    return callApi<Room[]>("/api/rooms", token);
+}
+
+export function fetchMessages(token: string, chat: Chat): Promise<Message[]> {
+    const param = chat.type === "room" ? "roomId=" : "userId=";
+    return callApi<Message[]>("/api/messages?" + param + chat.id, token);
+}
+
+export function sendMessage(token: string, chat: Chat, content: string, image?: string): Promise<Message> {
+    const target = chat.type === "room" ? {roomId: chat.id} : {receiverId: chat.id};
+    return callApi<Message>("/api/message", token, {
+        method: "POST",
+        body: JSON.stringify({...target, content, image}),
+    });
+}
+
+// Envoie le fichier à Vercel Blob et renvoie son URL
+export async function uploadImage(token: string, file: File): Promise<string> {
+    const response = await fetch("/api/upload?filename=" + encodeURIComponent(file.name), {
+        method: "POST",
+        headers: {
+            "Content-Type": file.type,
+            [AUTHENT_HEADER]: BEARER + token,
+        },
+        body: file,
+    });
+    if (response.status === 401) {
+        throw new UnauthorizedError();
+    }
+    if (!response.ok) {
+        throw new Error("Erreur " + response.status);
+    }
+    const {url} = await response.json() as {url: string};
+    return url;
 }
