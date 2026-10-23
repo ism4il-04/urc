@@ -15,18 +15,27 @@ export function startNotifications(session: Session) {
         headers: {[AUTHENT_HEADER]: BEARER + session.token},
     });
 
-    beamsClient.start()
-        .then(() => beamsClient!.getUserId())
+    const client = beamsClient;
+    const subscribe = () => client.start()
+        .then(() => client.getUserId())
         .then((userId) => {
             // Le navigateur est encore abonné pour un autre utilisateur : on efface l'ancien abonnement
             if (userId && userId !== session.externalId) {
-                return beamsClient!.clearAllState();
+                return client.clearAllState();
             }
         })
-        .then(() => beamsClient!.addDeviceInterest("global"))
-        .then(() => beamsClient!.setUserId(session.externalId, beamsTokenProvider))
-        .then(() => beamsClient!.getDeviceId())
-        .then((deviceId) => console.log("Push id : " + deviceId))
+        .then(() => client.addDeviceInterest("global"))
+        .then(() => client.setUserId(session.externalId, beamsTokenProvider))
+        .then(() => client.getDeviceId())
+        .then((deviceId) => console.log("Push id : " + deviceId));
+
+    subscribe()
+        .catch((error) => {
+            // Abonnement invalide (ex : "Subscription is not registered with the given push service") :
+            // on repart de zéro avec un nouvel abonnement, une seule fois
+            console.warn("Abonnement push invalide, nouvel essai : " + error);
+            return client.clearAllState().then(subscribe);
+        })
         .catch(console.error);
 }
 
